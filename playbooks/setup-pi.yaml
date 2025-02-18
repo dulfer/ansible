@@ -1,0 +1,59 @@
+---
+- name: Setup Raspberry Pi SBCs
+  hosts: meshtastic
+  remote_user: root
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    # upgrade all packages
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+        
+    # disable avahi-daemon ipv6 support in /etc/avahi/avahi-daemon.conf
+    - name: Disable avahi-daemon ipv6 support
+      lineinfile:
+        path: /etc/avahi/avahi-daemon.conf
+        line: 'use-ipv6=no'
+        state: present
+      register: avahi_daemon
+    
+    # if /etc/avahi/avahi-daemon.conf was changed, restart avahi-daemon
+    - name: Restart avahi-daemon
+      service:
+        name: avahi-daemon
+        state: restarted
+        enabled: yes
+      when: avahi_daemon.changed
+
+    - name: 'Get Ansible user credentials from Bitwarden'
+      set_fact:
+        ansible_user:
+          username: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='username') }}"
+          password: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='password') }}"
+
+    # add ansible user with sudo privileges and store password: ansible222141
+    - name: Add ansible user with sudo privileges
+      ansible.builtin.user:
+        name: {{ ansible_user.username }}
+        state: present
+        groups: sudo
+        comment: "Ansible configuration management user"
+        shell: /bin/bash
+        password: "{{ ansible_user.password | password_hash('sha512') }}"
+        update_password: on_create
+    
+    - name: Install git package
+      apt:
+        name: git
+        state: present
+
+    # setup meshtasticd using role
+    - name: Install Meshtasticd
+      include_role:
+        name: meshtasticd
+
+    

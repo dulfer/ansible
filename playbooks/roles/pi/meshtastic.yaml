@@ -1,0 +1,10 @@
+# this role sets up the Meshtastic daemon on Raspberry Pi SBCs
+# reading variables from bitwarden secrets manager
+---
+- name: 'Get Meshtastic MQTT details from Bitwarden'
+  set_fact:
+    mqtt:
+      host: "{{ lookup('community.general.bitwarden', 'meshtastic:mqtt:meshnet', field='server') }}"
+      username: "{{ lookup('community.general.bitwarden', 'meshtastic:mqtt:meshnet', field='username') }}"
+      password: "{{ lookup('community.general.bitwarden', 'meshtastic:mqtt:meshnet', field='password') }}"
+      topic: "{{ lookup('community.general.bitwarden', 'meshtastic:mqtt:meshnet', field='topic') }}"
