@@ -54,7 +54,7 @@ This repository contains Ansible playbooks and roles for managing configuration 
 
 Instead of storing secrets in Ansible Vault, these can also be stored in an external secrets manager like Bitwarden Secrets Manager.
 
-🔗 https://docs.ansible.com/ansible/latest/collections/community/general/bitwarden_lookup.html
+🔗 <https://docs.ansible.com/ansible/latest/collections/community/general/bitwarden_lookup.html>
 
 ### Usage
 
