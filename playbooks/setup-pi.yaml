@@ -3,6 +3,8 @@
   hosts: meshtastic
   remote_user: ddulfer
   become: yes
+  roles:
+   - meshtastic
   vars_prompt:
     - name: "remote_pass"
       prompt: "Enter the password for the remote host"
@@ -10,16 +12,16 @@
   vars:
     ansible_ssh_pass: "{{ remote_pass }}"
   tasks:
-    # - name: Update apt cache
-    #   apt:
-    #     update_cache: yes
+    - name: Update apt cache
+      apt:
+        update_cache: yes
 
-    # # upgrade all packages
-    # - name: Upgrade all packages
-    #   apt:
-    #     upgrade: dist
+    # upgrade all packages
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
     
-    # ensure avahi-daemon is installed
+    #ensure avahi-daemon is installed
     - name: Install avahi-daemon
       apt:
         name: avahi-daemon
@@ -44,29 +46,22 @@
 
     - name: 'Get Ansible user credentials from Bitwarden'
       set_fact:
-        ansible_user:
-          username: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='username') }}"
-          password: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='password') }}"
+        ansible_user_username: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='username') | first }}"
+        ansible_user_password: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='password') | first }}"
 
-    # add ansible user with sudo privileges and store password: ansible222141
+    # add ansible user with sudo privileges and use credentials from ansible_user facts
     - name: Add ansible user with sudo privileges
       ansible.builtin.user:
-        name: "{{ ansible_user.username }}"
+        name: "{{ ansible_user_username }}"
         state: present
         groups: sudo
         comment: "Ansible configuration management user"
         shell: /bin/bash
-        password: "{{ ansible_user.password | password_hash('sha512') }}"
+        password: "{{ ansible_user_password | password_hash('sha512') }}"
         update_password: on_create
     
     - name: Install git package
       apt:
         name: git
         state: present
-
-    # setup meshtasticd using role
-    # - name: Install Meshtasticd
-    #   include_role:
-    #     name: meshtasticd
-
-    
+        

@@ -1,0 +1,67 @@
+---
+# this role sets up the Meshtastic daemon on Raspberry Pi SBCs
+# reading variables from bitwarden secrets manager
+
+- name: 'Get Meshtastic MQTT details from Bitwarden'
+  set_fact:
+    mqtt:
+      host: "{{ lookup('community.general.bitwarden', 'meshtastic:mqtt:meshnet', field='server') }}"
+      username: "{{ lookup('community.general.bitwarden', 'meshtastic:mqtt:meshnet', field='username') }}"
+      password: "{{ lookup('community.general.bitwarden', 'meshtastic:mqtt:meshnet', field='password') }}"
+      topic: "{{ lookup('community.general.bitwarden', 'meshtastic:mqtt:meshnet', field='topic') }}"
+
+- name: Add Meshtastic GPG key to /etc/apt/trusted.gpg.d/meshtastic-archive-keyring.asc
+  ansible.builtin.get_url:
+    url: "https://download.opensuse.org/repositories/network:Meshtastic:beta/Raspbian_12/Release.key"
+    dest: "/etc/apt/trusted.gpg.d/meshtastic-archive-keyring.asc"
+    mode: '0644'
+    force: true
+
+- name: Add Meshtastic APT repository with signed-by option
+  ansible.builtin.apt_repository:
+    repo: "deb http://download.opensuse.org/repositories/network:/Meshtastic:/beta/Raspbian_12/ /"
+    state: present
+    filename: "network:Meshtastic:beta"
+
+- name: Update APT cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Ensure SPI is enabled in /boot/firmware/config.txt
+  ansible.builtin.lineinfile:
+    path: /boot/firmware/config.txt
+    regexp: '^dtparam=spi='
+    line: 'dtparam=spi=on'
+    state: present
+
+- name: Ensure SPI overlay is set in /boot/firmware/config.txt
+  ansible.builtin.lineinfile:
+    path: /boot/firmware/config.txt
+    line: 'dtoverlay=spi0-0cs'
+    state: present
+
+- name: Install Meshtastic daemon
+  ansible.builtin.apt:
+    name: meshtasticd
+    state: present
+
+- name: Ensure lora-waveshare-sxxx.yaml is copied to /etc/meshtasticd/config.d/
+  ansible.builtin.copy:
+    src: lora-waveshare-sxxx.yaml
+    dest: /etc/meshtasticd/config.d/lora-waveshare-sxxx.yaml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy Avahi (mDNS) Configuration file
+  ansible.builtin.copy:
+    src: meshtastic.service
+    dest: /etc/avahi/services/meshtastic.service
+    owner: root
+    group: root
+
+- name: Ensure meshtasticd service is enabled and started
+  ansible.builtin.service:
+    name: meshtasticd
+    state: started
+    enabled: yes
