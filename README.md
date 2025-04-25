@@ -53,8 +53,10 @@ This repository contains Ansible playbooks and roles for managing configuration 
 ## Bitwarden/Vaultwarden secrets management
 
 Instead of storing secrets in Ansible Vault, these can also be stored in an external secrets manager like Bitwarden Secrets Manager.
-
 🔗 <https://docs.ansible.com/ansible/latest/collections/community/general/bitwarden_lookup.html>
+
+Install the Bitwarden CLI using the script /setup/vaulwarden-cli.sh  
+Set Bitwarden/Vaultwarden server: `bw config server https://vault.yourdomain.net`
 
 ### Usage
 
@@ -63,13 +65,17 @@ Instead of storing secrets in Ansible Vault, these can also be stored in an exte
 3. Set BitWarden access token as environment variable, so playbook can connect to the vault
 
     ```bash
+    # login to BW
+    bw login
+    
+    # once a valid password has been provided, BW will output the BW_SESSION value
     export BWS_ACCESS_TOKEN=<ACCESS_TOKEN_VALUE>
     ```
 
 4. Run the main playbook using the command:
 
     ```bash
-    ansible-playbook playbooks/site.yml
+    ansible-playbook -i inventory/production/hosts.yaml playbooks/site.yml
     ```
 
 This will apply the configurations defined in the playbooks and roles to the home lab environment

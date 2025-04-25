@@ -1,24 +1,37 @@
 ---
 - name: Setup Raspberry Pi SBCs
   hosts: meshtastic
-  remote_user: root
-
+  remote_user: ddulfer
+  become: yes
+  vars_prompt:
+    - name: "remote_pass"
+      prompt: "Enter the password for the remote host"
+      private: yes
+  vars:
+    ansible_ssh_pass: "{{ remote_pass }}"
   tasks:
-    - name: Update apt cache
-      apt:
-        update_cache: yes
+    # - name: Update apt cache
+    #   apt:
+    #     update_cache: yes
 
-    # upgrade all packages
-    - name: Upgrade all packages
+    # # upgrade all packages
+    # - name: Upgrade all packages
+    #   apt:
+    #     upgrade: dist
+    
+    # ensure avahi-daemon is installed
+    - name: Install avahi-daemon
       apt:
-        upgrade: dist
-        
+        name: avahi-daemon
+        state: present
+
     # disable avahi-daemon ipv6 support in /etc/avahi/avahi-daemon.conf
     - name: Disable avahi-daemon ipv6 support
       lineinfile:
         path: /etc/avahi/avahi-daemon.conf
-        line: 'use-ipv6=no'
-        state: present
+        regexp: '^use-ipv6=yes'
+        insertafter: '^#use-ipv6=yes'
+        line: use-ipv6=no
       register: avahi_daemon
     
     # if /etc/avahi/avahi-daemon.conf was changed, restart avahi-daemon
@@ -38,7 +51,7 @@
     # add ansible user with sudo privileges and store password: ansible222141
     - name: Add ansible user with sudo privileges
       ansible.builtin.user:
-        name: {{ ansible_user.username }}
+        name: "{{ ansible_user.username }}"
         state: present
         groups: sudo
         comment: "Ansible configuration management user"
@@ -52,8 +65,8 @@
         state: present
 
     # setup meshtasticd using role
-    - name: Install Meshtasticd
-      include_role:
-        name: meshtasticd
+    # - name: Install Meshtasticd
+    #   include_role:
+    #     name: meshtasticd
 
     
