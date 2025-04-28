@@ -1,0 +1,7 @@
+---
+meshtastic:
+  hosts:
+    10.100.0.168:
+  vars:
+    remote_user: pi
+    ansible_ssh_pass: "{{ lookup('community.general.bitwarden', 'linux:pi', field='password') }}"
