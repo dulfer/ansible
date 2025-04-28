@@ -1,0 +1,9 @@
+<?xml version="1.0" standalone="no"?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+    <name>Meshtastic</name>
+    <service protocol="ipv4">
+        <type>_meshtastic._tcp</type>
+        <port>4403</port>
+    </service>
+</service-group>
