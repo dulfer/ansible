@@ -1,7 +1,20 @@
 ---
+all:
+  vars:
+    #ansible_user: ansible
+    #ansible_ssh_pass: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='password') | first }}"
+  
 meshtastic:
   hosts:
     10.100.0.168:
   vars:
-    remote_user: pi
-    ansible_ssh_pass: "{{ lookup('community.general.bitwarden', 'linux:pi', field='password') }}"
+    ansible_user: ddulfer
+
+proxmox_nodes:
+  hosts:
+    192.168.41.11:
+    192.168.41.12:
+    192.168.41.13:
+    192.168.41.14:
+  vars:
+    ansible_user: root
