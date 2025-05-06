@@ -11,6 +11,7 @@
       topic: "{{ lookup('community.general.bitwarden', 'meshtastic:mqtt:meshnet', field='topic') }}"
 
 - name: Add Meshtastic GPG key to /etc/apt/trusted.gpg.d/meshtastic-archive-keyring.asc
+  become: true
   ansible.builtin.get_url:
     url: "https://download.opensuse.org/repositories/network:Meshtastic:beta/Raspbian_12/Release.key"
     dest: "/etc/apt/trusted.gpg.d/meshtastic-archive-keyring.asc"
@@ -18,16 +19,21 @@
     force: true
 
 - name: Add Meshtastic APT repository with signed-by option
+  become: true
   ansible.builtin.apt_repository:
     repo: "deb http://download.opensuse.org/repositories/network:/Meshtastic:/beta/Raspbian_12/ /"
     state: present
     filename: "network:Meshtastic:beta"
 
 - name: Update APT cache
+  become: true 
   ansible.builtin.apt:
     update_cache: yes
+    autoremove: yes
+    autoclean: yes
 
 - name: Ensure SPI is enabled in /boot/firmware/config.txt
+  become: true
   ansible.builtin.lineinfile:
     path: /boot/firmware/config.txt
     regexp: '^dtparam=spi='
@@ -35,17 +41,26 @@
     state: present
 
 - name: Ensure SPI overlay is set in /boot/firmware/config.txt
+  become: true
   ansible.builtin.lineinfile:
     path: /boot/firmware/config.txt
     line: 'dtoverlay=spi0-0cs'
     state: present
 
+- name: Install RPI GPIO
+  become: true
+  ansible.builtin.apt:
+    name: rpi.gpio-common
+    state: present
+
 - name: Install Meshtastic daemon
+  become: true
   ansible.builtin.apt:
     name: meshtasticd
     state: present
 
 - name: Ensure lora-waveshare-sxxx.yaml is copied to /etc/meshtasticd/config.d/
+  become: true
   ansible.builtin.copy:
     src: lora-waveshare-sxxx.yaml
     dest: /etc/meshtasticd/config.d/lora-waveshare-sxxx.yaml
@@ -54,6 +69,7 @@
     mode: '0644'
 
 - name: Copy Avahi (mDNS) Configuration file
+  become: true
   ansible.builtin.copy:
     src: meshtastic.service
     dest: /etc/avahi/services/meshtastic.service
@@ -61,6 +77,7 @@
     group: root
 
 - name: Ensure meshtasticd service is enabled and started
+  become: true
   ansible.builtin.service:
     name: meshtasticd
     state: started
