@@ -1,29 +1,23 @@
 ---
 - name: Setup Raspberry Pi SBC as Meshtastic node
   hosts: meshtastic
-  remote_user: "{{ ansible_user }}"
-  become: yes
+  remote_user: "ansible"
+  gather_facts: no
+  become: true 
 
   roles:
    - meshtastic
 
-  vars_prompt:
-    - name: "remote_pass"
-      prompt: "Enter the password for the remote host"
-      private: yes
-
   vars:
-    ansible_ssh_pass: "{{ remote_pass }}"
+    ansible_user: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='username') | first }}"
+    ansible_ssh_pass: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='password') | first }}"
+    ansible_become_password: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='password') | first }}"
 
-  tasks:
-    - name: Update apt cache and perform upgrades
+  pre_tasks:
+    - name: Update apt cache
       apt:
         update_cache: yes
-        upgrade: dist  
-        autoremove: yes
-        autoclean: yes
-        clean: yes     
-    
+        
     #ensure avahi-daemon is installed
     - name: Install avahi-daemon
       apt:
