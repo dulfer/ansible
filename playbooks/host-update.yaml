@@ -5,6 +5,7 @@
   remote_user: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='username') | first }}"
 
   vars:
+    ansible_user: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='username') | first }}"
     ansible_ssh_pass: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='password') | first }}"
     ansible_become_pass: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='password') | first }}"
 
