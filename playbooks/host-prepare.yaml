@@ -29,14 +29,18 @@
         name: "{{ ansible_user_username }}"
         state: present
         groups: sudo
+        append: yes
         comment: "Ansible configuration management user"
         shell: /bin/bash
         password: "{{ ansible_user_password | password_hash('sha512') }}"
         update_password: on_create
-        
-    # add user 'ansible' to sudo group
-    - name: Add ansible user to sudo group
-      ansible.builtin.user:
-        name: "{{ ansible_user_username }}"
-        groups: sudo
-        append: yes
+
+    # Configure sudo access without password
+    - name: Allow ansible user sudo without password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/ansible
+        line: "{{ ansible_user_username }} ALL=(ALL) NOPASSWD:ALL"
+        state: present
+        mode: '0440'
+        create: yes
+        validate: '/usr/sbin/visudo -cf %s'
