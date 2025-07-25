@@ -1,6 +1,7 @@
 - name: Create Ansible user with sudo privileges
   hosts: all
   remote_user: "{{ ansible_user }}"
+  become: yes
 
   vars_prompt:
     - name: "remote_pass"
@@ -16,13 +17,7 @@
         ansible_user_username: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='username') | first }}"
         ansible_user_password: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='password') | first }}"
 
-    # ensure sudo is installed on host
-    - name: apt update
-      apt:
-        update_cache: yes
-        force_apt_get: yes
-        cache_valid_time: 3600
-    
+    # make sure sudo is installed
     - name: Install sudo
       apt:
         name: sudo

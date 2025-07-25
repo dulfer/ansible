@@ -3,7 +3,19 @@ all:
   vars:
     #ansible_user: ansible
     #ansible_ssh_pass: "{{ lookup('community.general.bitwarden', 'linux:ansible', field='password') | first }}"
-  
+
+rpi:
+  hosts:
+    10.100.0.168:
+  vars:
+    ansible_user: ddulfer
+    
+meshcore:
+  hosts:
+    10.100.0.168:
+  vars:
+    ansible_user: ddulfer
+
 meshtastic:
   hosts:
     10.100.0.168:
